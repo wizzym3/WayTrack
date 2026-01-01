@@ -160,8 +160,7 @@
             width: 100%;
             padding: 1.5rem 0;
             z-index: 1000;
-            background-color: rgba(var(--bg-color), 0.95);
-            backdrop-filter: blur(10px);
+            background-color: var(--bg-color);
             border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
@@ -520,6 +519,12 @@
             .map-container {
                 margin-top: 0.25rem;
             }
+            
+            .header {
+                padding: 1rem 0;
+                backdrop-filter: none;
+                background-color: var(--bg-color);
+            }
         }
 
         @media (max-width: 480px) {
@@ -530,10 +535,12 @@
 
             .nav-links {
                 gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
             }
 
             .hero {
-                padding-top: 5rem;
+                padding-top: 6rem;
                 min-height: 25vh;
             }
 
@@ -546,16 +553,14 @@
             }
 
             .theme-toggle {
-                position: fixed;
-                top: 0.75rem;
-                right: 1rem;
-                z-index: 1001;
-                background-color: var(--card-bg);
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                position: static;
+                margin-left: 0;
+                background-color: transparent;
+                box-shadow: none;
             }
 
             .dark-mode .theme-toggle {
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                box-shadow: none;
             }
 
             h1 {
@@ -564,6 +569,11 @@
 
             .hero-subtitle {
                 font-size: 1.1rem;
+            }
+            
+            .header {
+                padding: 1rem 0;
+                backdrop-filter: none;
             }
         }
 
@@ -778,7 +788,7 @@
             }
 
             const isDarkMode = document.body.classList.contains('dark-mode');
-            const tileUrl = isDarkMode
+            const tileUrl = isDarkMode 
                 ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
                 : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
@@ -849,10 +859,10 @@
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.header');
             if (window.scrollY > 50) {
-                header.style.backgroundColor = 'rgba(var(--bg-color), 0.98)';
+                header.style.backgroundColor = 'var(--bg-color)';
                 header.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.03)';
             } else {
-                header.style.backgroundColor = 'rgba(var(--bg-color), 0.95)';
+                header.style.backgroundColor = 'var(--bg-color)';
                 header.style.boxShadow = 'none';
             }
         });
@@ -860,5 +870,4 @@
         window.dispatchEvent(new Event('scroll'));
     </script>
 </body>
-
 </html>
