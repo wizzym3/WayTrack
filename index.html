@@ -160,9 +160,18 @@
             width: 100%;
             padding: 1.5rem 0;
             z-index: 1000;
-            background-color: var(--bg-color);
+            background-color: rgba(var(--bg-color), 0.95);
             border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+
+        @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+            .header {
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+            }
         }
 
         .nav {
@@ -522,8 +531,9 @@
             
             .header {
                 padding: 1rem 0;
-                backdrop-filter: none;
-                background-color: var(--bg-color);
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+                background-color: rgba(var(--bg-color), 0.98);
             }
         }
 
@@ -573,7 +583,9 @@
             
             .header {
                 padding: 1rem 0;
-                backdrop-filter: none;
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+                background-color: rgba(var(--bg-color), 0.98);
             }
         }
 
@@ -859,10 +871,10 @@
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.header');
             if (window.scrollY > 50) {
-                header.style.backgroundColor = 'var(--bg-color)';
+                header.style.backgroundColor = 'rgba(var(--bg-color), 0.98)';
                 header.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.03)';
             } else {
-                header.style.backgroundColor = 'var(--bg-color)';
+                header.style.backgroundColor = 'rgba(var(--bg-color), 0.95)';
                 header.style.boxShadow = 'none';
             }
         });
