@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Way Track — Путешествия</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --white: #FFFFFF;
+            --black: #000000;
+            --gray-50: #FAFAFA;
+            --gray-100: #F5F5F5;
+            --gray-200: #EEEEEE;
+            --gray-300: #E0E0E0;
+            --gray-400: #BDBDBD;
+            --gray-500: #9E9E9E;
+            --gray-600: #757575;
+            --gray-700: #616161;
+            --gray-800: #424242;
+            --gray-900: #212121;
+            --accent: #1A1A1A;
+            --bg-color: #FFFFFF;
+            --text-color: #000000;
+            --section-bg: #F5F5F5;
+            --card-bg: #FFFFFF;
+            --border-color: #EEEEEE;
+            --accent-blue: #0088cc;
+            --accent-green: #10B981;
+        }
+
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #E0E0E0;
+            --section-bg: #1E1E1E;
+            --card-bg: #2D2D2D;
+            --border-color: #424242;
+            --white: #2D2D2D;
+            --black: #E0E0E0;
+            --gray-50: #1E1E1E;
+            --gray-100: #2D2D2D;
+            --gray-200: #424242;
+            --gray-300: #616161;
+            --gray-400: #757575;
+            --gray-500: #9E9E9E;
+            --gray-600: #BDBDBD;
+            --gray-700: #E0E0E0;
+            --gray-800: #EEEEEE;
+            --gray-900: #F5F5F5;
+            --accent-blue: #4DA6FF;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+        }
+
+        .topography-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.03;
+        }
+
+        .topography-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='topography' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='0.5' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='5' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='10' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='15' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='20' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='25' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'/%3E%3Cline x1='50' y1='0' x2='50' y2='100' stroke='%23000000' stroke-width='0.2' opacity='0.05'/%3E%3Cline x1='0' y1='50' x2='100' y2='50' stroke='%23000000' stroke-width='0.2' opacity='0.05'/%3E%3Cline x1='25' y1='0' x2='25' y2='100' stroke='%23000000' stroke-width='0.15' opacity='0.03'/%3E%3Cline x1='75' y1='0' x2='75' y2='100' stroke='%23000000' stroke-width='0.15' opacity='0.03'/%3E%3Cline x1='0' y1='25' x2='100' y2='25' stroke='%23000000' stroke-width='0.15' opacity='0.03'/%3E%3Cline x1='0' y1='75' x2='100' y2='75' stroke='%23000000' stroke-width='0.15' opacity='0.03'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23topography)'/%3E%3C/svg%3E");
+            background-size: 400px 400px;
+        }
+
+        .dark-mode .topography-svg {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='topography-dark' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='0.5' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='5' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='10' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='15' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='25' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='%23E0E0E0' stroke-width='0.3' opacity='0.03'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23topography-dark)'/%3E%3C/svg%3E");
+            opacity: 0.02;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            color: var(--gray-700);
+            font-size: 1.125rem;
+        }
+
+        .large-text {
+            font-size: 1.25rem;
+            line-height: 1.7;
+        }
+
+        .small-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 6rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 0;
+            z-index: 1000;
+            background-color: rgba(var(--bg-color), 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-color);
+        }
+
+        .hero {
+            min-height: 30vh;
+            display: flex;
+            align-items: center;
+            padding-top: 6rem;
+        }
+
+        .hero-content {
+            max-width: 700px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .location-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background-color: var(--gray-50);
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-top: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .location-indicator::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .map-section {
+            padding: 0;
+            background-color: var(--section-bg);
+        }
+
+        .map-container {
+            height: 500px;
+            width: 100%;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+        }
+
+        .dark-mode .map-container {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .map-title {
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .map-title h3 {
+            font-size: 1.25rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .leaflet-container {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.875rem;
+        }
+
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+
+        .leaflet-tile-loaded a,
+        .leaflet-tile-loaded img {
+            pointer-events: none !important;
+        }
+
+        .custom-marker {
+            background: none;
+            border: none;
+        }
+
+        .custom-marker .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--text-color);
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+            animation: marker-pulse 2s infinite;
+        }
+
+        .custom-marker .marker-pin::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            margin: 9px 0 0 9px;
+            background: var(--bg-color);
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        @keyframes marker-pulse {
+            0% { transform: rotate(-45deg) scale(1); }
+            50% { transform: rotate(-45deg) scale(1.1); }
+            100% { transform: rotate(-45deg) scale(1); }
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .journey-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .journey-step {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .journey-step:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: var(--gray-100);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--gray-700);
+        }
+
+        .content-stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            background-color: var(--section-bg);
+            border-radius: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stats-content {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .post-count {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .cta {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .telegram-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background-color: var(--accent-blue);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .telegram-link:hover {
+            background-color: var(--text-color);
+            transform: translateY(-2px);
+            color: var(--bg-color);
+        }
+
+        .footer {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-text {
+            color: var(--gray-600);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--gray-100);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            color: var(--gray-700);
+            transition: all 0.3s ease;
+        }
+
+        .sun-icon {
+            display: block;
+        }
+
+        .moon-icon {
+            display: none;
+        }
+
+        .dark-mode .sun-icon {
+            display: none;
+        }
+
+        .dark-mode .moon-icon {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 4rem 0;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+            }
+
+            .container {
+                padding: 0 1.5rem;
+            }
+
+            .content-stats {
+                padding: 2rem 1.5rem;
+            }
+
+            .post-count {
+                font-size: 3rem;
+            }
+
+            .map-container {
+                height: 400px;
+            }
+
+            .hero {
+                min-height: 30vh;
+                padding-top: 5rem;
+            }
+
+            .hero-subtitle {
+                margin-bottom: 0.25rem;
+            }
+
+            .location-indicator {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .map-title {
+                margin-bottom: 0.1rem;
+            }
+
+            .map-container {
+                margin-top: 0.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero {
+                padding-top: 5rem;
+                min-height: 25vh;
+            }
+
+            .map-container {
+                height: 350px;
+            }
+
+            .section {
+                padding: 3rem 0;
+            }
+
+            .theme-toggle {
+                position: fixed;
+                top: 0.75rem;
+                right: 1rem;
+                z-index: 1001;
+                background-color: var(--card-bg);
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .dark-mode .theme-toggle {
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="topography-pattern">
+        <div class="topography-svg"></div>
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="logo">WAY TRACK</a>
+                <div class="nav-links">
+                    <a href="#about" class="nav-link">О пути</a>
+                    <a href="#map" class="nav-link">Локация</a>
+                    <a href="#connect" class="nav-link">Присоединиться</a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero section">
+        <div class="container">
+            <div class="hero-content fade-in">
+                <h1>WAY TRACK</h1>
+                <p class="hero-subtitle large-text">
+                    От Уральских хребтов до джунглей Вьетнама. Хроника движения.
+                </p>
+                <div class="location-indicator fade-in">
+                    Сейчас: Вьетнам · Архив: 200+ постов
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="map-section" id="map">
+        <div class="container">
+            <div class="map-title fade-in">
+                <h3>Текущая локация путешествия</h3>
+            </div>
+            <div class="map-container fade-in" id="mapContainer"></div>
+        </div>
+    </section>
+
+    <section class="section" id="about">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Философия пути</h2>
+                <p class="large-text">Путешествие как осознанное движение и трансформация</p>
+            </div>
+            <div class="about-grid">
+                <div class="fade-in">
+                    <h3>Путь как процесс</h3>
+                    <p class="large-text">
+                        Мой путь начался с исследования Уральских гор, где природа учила стойкости и простоте.
+                        Затем были сплавы по рекам России — метафора течения жизни, где важно чувствовать ритм и направление.
+                    </p>
+                    <p class="large-text">
+                        Турция стала хорошим опытом — мостом между культурами, где я научился видеть красоту в различиях.
+                        Сейчас я во Вьетнаме, продолжаю документировать путь через призму личного опыта.
+                        Way Track — не о количестве пройденных километров, а о качестве пережитых моментов.
+                    </p>
+                </div>
+                <div class="journey-steps fade-in">
+                    <div class="journey-step">
+                        <div class="step-number">1</div>
+                        <h3>Уральские горы</h3>
+                        <p>Исследование суровых пейзажей, где формировалось понимание пути как преодоления</p>
+                    </div>
+                    <div class="journey-step">
+                        <div class="step-number">2</div>
+                        <h3>Сплавы по рекам России</h3>
+                        <p>Метафорическое путешествие по водным артериям страны, уроки течения и адаптации</p>
+                    </div>
+                    <div class="journey-step">
+                        <div class="step-number">3</div>
+                        <h3>Турция</h3>
+                        <p> Турция — идеальный опыт: мост между Европой и Азией, древние города и искреннее гостеприимство.</p>
+                    </div>
+                    <div class="journey-step">
+                        <div class="step-number">4</div>
+                        <h3>Вьетнам</h3>
+                        <p>Текущая глава — исследование культуры Юго-Восточной Азии через призму повседневности</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="content">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Контент</h2>
+                <p class="large-text">Качество над количеством, глубина над поверхностью</p>
+            </div>
+            <div class="content-stats fade-in">
+                <div class="stats-content">
+                    <div class="post-count">200+</div>
+                    <h3>Авторских постов</h3>
+                    <p class="large-text">
+                        Каждый пост — не просто отчет о путешествии, а законченная история с фотографиями,
+                        наблюдениями и рефлексией. От Урала до Вьетнама через Турцию — хроника личной трансформации.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="connect">
+        <div class="container">
+            <div class="cta fade-in">
+                <h2>Присоединиться к пути</h2>
+                <p class="large-text">
+                    Подпишитесь на Telegram-канал Way Track, чтобы следить за продолжением истории.
+                    Новые посты появляются по мере прохождения пути — без графика, но с максимальной глубиной.
+                </p>
+                <a href="https://t.me/way_track" class="telegram-link" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.06-.2-.07-.06-.17-.04-.24-.02-.1.02-1.79 1.14-5.06 3.34-.48.33-.91.49-1.3.48-.43-.01-1.27-.24-1.89-.44-.76-.24-1.36-.37-1.31-.78.03-.24.37-.48 1-.74z"/>
+                    </svg>
+                    Читать в Telegram
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer section">
+        <div class="container">
+            <div class="fade-in">
+                <h3>WAY TRACK</h3>
+                <p class="footer-text">Хроника осознанного путешествия · 2025</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+        let map = null;
+        let currentTileLayer = null;
+
+        function initMap() {
+            map = L.map('mapContainer', {
+                attributionControl: false,
+                zoomControl: false
+            }).setView([21.0285, 105.8542], 6);
+
+            updateMapTheme();
+
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div class="marker-pin"></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -30]
+            });
+
+            const marker = L.marker([21.0285, 105.8542], { icon: customIcon }).addTo(map);
+
+            marker.bindPopup(`
+                <div style="padding: 0.5rem; font-family: 'Inter', sans-serif;">
+                    <strong>Сейчас здесь</strong><br>
+                    <span style="color: var(--gray-600); font-size: 0.875rem;">Ханой, Вьетнам</span>
+                </div>
+            `);
+
+            marker.openPopup();
+
+            map.dragging.disable();
+            map.touchZoom.disable();
+            map.doubleClickZoom.disable();
+            map.scrollWheelZoom.disable();
+            map.boxZoom.disable();
+            map.keyboard.disable();
+
+            map.attributionControl = false;
+        }
+
+        function updateMapTheme() {
+            if (currentTileLayer) {
+                map.removeLayer(currentTileLayer);
+            }
+
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const tileUrl = isDarkMode
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+            currentTileLayer = L.tileLayer(tileUrl, {
+                attribution: '',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                body.classList.add('dark-mode');
+            }
+
+            setTimeout(() => {
+                if (map) updateMapTheme();
+            }, 100);
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                if (map) updateMapTheme();
+
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        });
+
+        const fadeElements = document.querySelectorAll('.fade-in');
+
+        const fadeInObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        fadeElements.forEach(el => fadeInObserver.observe(el));
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.backgroundColor = 'rgba(var(--bg-color), 0.98)';
+                header.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.03)';
+            } else {
+                header.style.backgroundColor = 'rgba(var(--bg-color), 0.95)';
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        window.dispatchEvent(new Event('scroll'));
+    </script>
+</body>
+</html>я
